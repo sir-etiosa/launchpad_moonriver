@@ -1,0 +1,15 @@
+<svg width="128" height="128" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="favGrad" x1="18" y1="18" x2="110" y2="110" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#8A7DFF"/>
+      <stop offset="1" stop-color="#63E6FF"/>
+    </linearGradient>
+  </defs>
+  <rect width="128" height="128" rx="32" fill="#071621"/>
+  <circle cx="64" cy="64" r="42" fill="url(#favGrad)" fill-opacity="0.16"/>
+  <path d="M41.8 42.8C54.1 31.6 68.5 31.5 81.2 38.8C91.7 44.7 99.5 55.8 99.5 67.5C99.5 84.9 85.5 98.6 68 98.6C50.4 98.6 36.5 84.9 36.5 67.5C36.5 60.8 39.1 54.7 43.6 49.8" stroke="url(#favGrad)" stroke-width="8" stroke-linecap="round"/>
+  <path d="M57.5 42.5L69.8 58.5H45.2L57.5 42.5Z" fill="url(#favGrad)"/>
+  <path d="M73.5 58.5H57.2C53.8 58.5 51.1 61.4 51.1 64.9V82.9C51.1 86.4 53.8 89.3 57.2 89.3H73.6C77 89.3 79.7 86.4 79.7 82.9V64.9C79.7 61.4 77 58.5 73.5 58.5Z" fill="#0A1E2C"/>
+  <path d="M58 69H72" stroke="#63E6FF" stroke-width="4" stroke-linecap="round"/>
+  <path d="M53.5 78.5H76.5" stroke="#C3F5FF" stroke-width="4" stroke-linecap="round" opacity="0.9"/>
+</svg>
