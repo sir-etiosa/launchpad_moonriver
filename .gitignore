@@ -11,6 +11,12 @@ dist/
 build/
 out/
 
+# Next.js
+.next/
+next-env.d.ts
+.vercel
+*.tsbuildinfo
+
 # Logs
 *.log
 npm-debug.log*
@@ -26,3 +32,6 @@ Thumbs.db
 
 # Command Code session/temp
 .commandcode/
+
+# Blockchain workspace — Foundry project, deploy keys, artifacts
+blockchain/

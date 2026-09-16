@@ -1,0 +1,89 @@
+@import "tailwindcss";
+
+@theme {
+  --color-night: #06121d;
+  --color-night-soft: #0d1d2b;
+  --color-panel: rgba(17, 29, 41, 0.85);
+  --color-panel-strong: #111f2d;
+  --color-ink: #ecf5ff;
+  --color-muted: #9bb1c3;
+  --color-line: rgba(160, 198, 220, 0.18);
+  --color-cyan: #63e6ff;
+  --color-purple: #8a7dff;
+  --color-orange: #ffb067;
+  --color-green: #6af0b9;
+
+  --font-sans: "Segoe UI", Inter, Arial, sans-serif;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: var(--font-sans);
+    color: var(--color-ink);
+    background:
+      radial-gradient(circle at top left, rgba(138, 125, 255, 0.28), transparent 30%),
+      radial-gradient(circle at top right, rgba(99, 230, 255, 0.24), transparent 38%),
+      linear-gradient(135deg, #050d16 0%, #081722 34%, #0a1d2d 100%);
+  }
+
+  img {
+    display: block;
+    max-width: 100%;
+  }
+
+  button,
+  a {
+    font: inherit;
+  }
+
+  main [id] {
+    scroll-margin-top: 96px;
+  }
+}
+
+/* Animations that cannot be expressed as pure utilities. */
+@keyframes orbitSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@utility orbit-spin {
+  transform-box: view-box;
+  transform-origin: 310px 310px;
+  animation: orbitSpin 32s linear infinite;
+}
+
+@utility orbit-spin-reverse {
+  transform-box: view-box;
+  transform-origin: 310px 310px;
+  animation: orbitSpin 24s linear infinite reverse;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .orbit-spin,
+  .orbit-spin-reverse {
+    animation: none;
+  }
+
+  html {
+    scroll-behavior: auto;
+  }
+}
