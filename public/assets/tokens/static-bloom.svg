@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Static Bloom">
+  <defs>
+    <radialGradient id="sblmBg" cx="50%" cy="28%" r="82%">
+      <stop offset="0" stop-color="#4a2589"/>
+      <stop offset="1" stop-color="#100a1e"/>
+    </radialGradient>
+    <linearGradient id="sblmPetalA" x1="0.5" y1="0" x2="0.5" y2="1">
+      <stop offset="0" stop-color="#e6bcff"/>
+      <stop offset="1" stop-color="#8a4ae0"/>
+    </linearGradient>
+    <linearGradient id="sblmPetalB" x1="0.5" y1="0" x2="0.5" y2="1">
+      <stop offset="0" stop-color="#c58bff"/>
+      <stop offset="1" stop-color="#6a2fc0"/>
+    </linearGradient>
+    <radialGradient id="sblmCore" cx="34%" cy="28%" r="76%">
+      <stop offset="0" stop-color="#fff3ba"/>
+      <stop offset="0.5" stop-color="#ffd24a"/>
+      <stop offset="1" stop-color="#d18c14"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="64" height="64" fill="url(#sblmBg)"/>
+
+  <g fill="url(#sblmPetalB)">
+    <ellipse cx="32" cy="15.5" rx="7" ry="12.5" transform="rotate(22.5 32 32)"/>
+    <ellipse cx="32" cy="15.5" rx="7" ry="12.5" transform="rotate(112.5 32 32)"/>
+    <ellipse cx="32" cy="15.5" rx="7" ry="12.5" transform="rotate(202.5 32 32)"/>
+    <ellipse cx="32" cy="15.5" rx="7" ry="12.5" transform="rotate(292.5 32 32)"/>
+  </g>
+  <g fill="url(#sblmPetalA)">
+    <ellipse cx="32" cy="15.5" rx="7" ry="12.5"/>
+    <ellipse cx="32" cy="15.5" rx="7" ry="12.5" transform="rotate(45 32 32)"/>
+    <ellipse cx="32" cy="15.5" rx="7" ry="12.5" transform="rotate(90 32 32)"/>
+    <ellipse cx="32" cy="15.5" rx="7" ry="12.5" transform="rotate(135 32 32)"/>
+    <ellipse cx="32" cy="15.5" rx="7" ry="12.5" transform="rotate(180 32 32)"/>
+    <ellipse cx="32" cy="15.5" rx="7" ry="12.5" transform="rotate(225 32 32)"/>
+    <ellipse cx="32" cy="15.5" rx="7" ry="12.5" transform="rotate(270 32 32)"/>
+    <ellipse cx="32" cy="15.5" rx="7" ry="12.5" transform="rotate(315 32 32)"/>
+  </g>
+
+  <circle cx="32" cy="32" r="13.6" fill="url(#sblmCore)"/>
+  <path d="M32 18.4a13.6 13.6 0 0 1 0 27.2 11 13.6 0 0 0 0-27.2z" fill="#a96a06" opacity="0.25"/>
+
+  <ellipse cx="27.3" cy="29.6" rx="2.5" ry="3.2" fill="#1b1030"/>
+  <ellipse cx="36.7" cy="29.6" rx="2.5" ry="3.2" fill="#1b1030"/>
+  <circle cx="28.1" cy="28.4" r="0.95" fill="#ffffff"/>
+  <circle cx="37.5" cy="28.4" r="0.95" fill="#ffffff"/>
+  <path d="M26.8 36.2q5.2 5.4 10.4 0" stroke="#1b1030" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+
+  <g fill="#ffffff" opacity="0.6">
+    <path d="M12 14l1.1 2.9 2.9 1.1-2.9 1.1L12 22l-1.1-2.9L8 18l2.9-1.1z"/>
+    <path d="M52 44l0.8 2.1 2.1.8-2.1.8-.8 2.1-.8-2.1-2.1-.8 2.1-.8z"/>
+  </g>
+</svg>

@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Orbital Labs">
+  <defs>
+    <radialGradient id="orbBg" cx="38%" cy="22%" r="88%">
+      <stop offset="0" stop-color="#63341a"/>
+      <stop offset="1" stop-color="#0d0917"/>
+    </radialGradient>
+    <radialGradient id="orbBall" cx="34%" cy="26%" r="78%">
+      <stop offset="0" stop-color="#fff0d4"/>
+      <stop offset="0.44" stop-color="#ffa855"/>
+      <stop offset="1" stop-color="#ad4514"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="64" height="64" fill="url(#orbBg)"/>
+  <g fill="#ffffff" opacity="0.5">
+    <circle cx="11" cy="12" r="1.1"/>
+    <circle cx="54" cy="15" r="0.9"/>
+    <circle cx="51" cy="27" r="0.8"/>
+    <circle cx="14" cy="30" r="0.9"/>
+  </g>
+
+  <path d="M8 42Q32 30 56 42" fill="none" stroke="#ffb067" stroke-width="3.4" stroke-linecap="round" opacity="0.5"/>
+
+  <circle cx="32" cy="28" r="14.4" fill="url(#orbBall)"/>
+  <g fill="#8a370f" opacity="0.3">
+    <ellipse cx="25" cy="22.5" rx="4.2" ry="3"/>
+    <ellipse cx="40" cy="33" rx="4.6" ry="3.2"/>
+    <ellipse cx="31" cy="38" rx="2.8" ry="2"/>
+  </g>
+  <path d="M32 13.6a14.4 14.4 0 0 1 0 28.8 11.8 14.4 0 0 0 0-28.8z" fill="#5c2207" opacity="0.32"/>
+
+  <circle cx="27.2" cy="25.4" r="2.45" fill="#1e1109"/>
+  <circle cx="36.8" cy="25.4" r="2.45" fill="#1e1109"/>
+  <circle cx="27.9" cy="24.5" r="0.85" fill="#ffffff"/>
+  <circle cx="37.5" cy="24.5" r="0.85" fill="#ffffff"/>
+  <path d="M27.6 31.4q4.4 4 8.8 0" stroke="#1e1109" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+
+  <path d="M8 42Q32 54 56 42" fill="none" stroke="#ffd3a1" stroke-width="3.6" stroke-linecap="round"/>
+</svg>

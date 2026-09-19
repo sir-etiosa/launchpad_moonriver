@@ -13,6 +13,7 @@ out/
 
 # Next.js
 .next/
+.next-build/
 next-env.d.ts
 .vercel
 *.tsbuildinfo

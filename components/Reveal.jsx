@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 
+const EASE = "ease-[cubic-bezier(0.22,1,0.36,1)]";
+
 export default function Reveal({
   as: Tag = "div",
   className = "",
@@ -29,7 +31,7 @@ export default function Reveal({
           }
         });
       },
-      { threshold: 0.12 },
+      { threshold: 0.1 },
     );
 
     observer.observe(node);
@@ -39,8 +41,8 @@ export default function Reveal({
   return (
     <Tag
       ref={ref}
-      className={`transition-[opacity,transform] duration-500 ease-out ${
-        visible ? "translate-y-0 opacity-100" : "translate-y-5 opacity-0"
+      className={`transition-[opacity,transform] duration-[360ms] ${EASE} ${
+        visible ? "translate-y-0 opacity-100" : "translate-y-2 opacity-0"
       } ${className}`}
       {...rest}
     >

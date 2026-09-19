@@ -3,18 +3,18 @@ import Reveal from "@/components/Reveal";
 
 export default function CtaPanel() {
   return (
-    <Reveal className="mt-[100px] flex flex-col items-start justify-between gap-5 rounded-3xl border border-line bg-linear-to-br from-[rgba(138,125,255,0.18)] to-[rgba(99,230,255,0.12)] px-8 py-7 shadow-[0_16px_28px_rgba(6,16,24,0.35)] min-[980px]:flex-row min-[980px]:items-center">
-      <div>
-        <p className="mb-[18px] text-[0.78rem] font-bold tracking-[0.18em] text-cyan">
-          READY TO LAUNCH
-        </p>
-        <h2 className="m-0 text-[clamp(2rem,3vw,3rem)] tracking-[-0.05em]">
-          Turn your community into the next big Web3 story.
-        </h2>
+    <Reveal className="border-t border-rule py-20 md:py-28">
+      <div className="flex flex-col items-start justify-between gap-10 md:flex-row md:items-end">
+        <div>
+          <p className="label m-0">Ready when you are</p>
+          <h2 className="mt-5 mb-0 max-w-[18ch] text-[clamp(2.2rem,4vw,3.4rem)] leading-[1.06] font-semibold tracking-[-0.035em]">
+            Bring a token, a deck, or a position.
+          </h2>
+        </div>
+        <Button as="a" href="/app" variant="primary" className="shrink-0">
+          Open the app
+        </Button>
       </div>
-      <Button href="#" variant="primary">
-        Book a Strategy Call
-      </Button>
     </Reveal>
   );
 }

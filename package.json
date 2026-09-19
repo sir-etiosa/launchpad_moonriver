@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "build:check": "node scripts/build-check.mjs",
+    "start": "next start",
+    "test": "node --test lib/whot/engine.test.mjs"
   },
   "repository": {
     "type": "git",

@@ -1,51 +1,54 @@
 import Reveal from "@/components/Reveal";
 
 const phases = [
-  {
-    step: "01",
-    title: "Launch Essentials",
-    body: "Token sales, investor dashboards, and KYB-backed project onboarding.",
-  },
-  {
-    step: "02",
-    title: "Growth Engine",
-    body: "Automated community rewards, referral loops, and milestone-based unlocks.",
-  },
-  {
-    step: "03",
-    title: "Cross-Chain Expansion",
-    body: "Multi-chain deployment, stronger analytics, and deeper interoperability.",
-  },
+  { step: "01", title: "Launchpad", status: "Ready" },
+  { step: "02", title: "Spot trading", status: "In build" },
+  { step: "03", title: "Games", status: "In build" },
+  { step: "04", title: "Futures trading", status: "Coming" },
 ];
+
+/** Each status gets an obvious tone, so the column reads at a glance. */
+const TONES = {
+  Ready: "text-live",
+  "In build": "text-gold",
+  Coming: "text-faint",
+};
 
 export default function Roadmap() {
   return (
-    <section id="roadmap" className="pt-[100px]">
-      <Reveal className="mb-7">
-        <p className="mb-[18px] text-[0.78rem] font-bold tracking-[0.18em] text-cyan">
-          ROADMAP
-        </p>
-        <h2 className="m-0 text-[clamp(2rem,3vw,3rem)] tracking-[-0.05em]">
-          Building the launchpad infrastructure in phases
+    <section id="roadmap" className="border-t border-rule py-20 md:py-28">
+      <Reveal>
+        <p className="label m-0">Roadmap</p>
+        <h2 className="mt-5 mb-0 text-[clamp(2.1rem,3.6vw,3rem)] leading-[1.08] font-semibold tracking-[-0.03em]">
+          In phases, in order
         </h2>
       </Reveal>
 
-      <Reveal className="grid gap-5">
+      <ol className="mt-14 mb-0 list-none p-0">
         {phases.map((phase) => (
-          <div
+          <Reveal
+            as="li"
             key={phase.step}
-            className="flex items-start gap-[18px] rounded-3xl border border-line bg-panel p-6 shadow-[0_16px_28px_rgba(6,16,24,0.35)]"
+            className="flex flex-wrap items-baseline justify-between gap-x-8 gap-y-2 border-t border-rule py-7"
           >
-            <span className="inline-flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-2xl border border-[rgba(160,198,220,0.12)] bg-linear-to-br from-[rgba(138,125,255,0.2)] to-[rgba(99,230,255,0.2)] font-extrabold text-cyan">
-              {phase.step}
-            </span>
-            <div>
-              <h3 className="mb-3 text-[1.4rem]">{phase.title}</h3>
-              <p className="m-0 leading-[1.7] text-muted">{phase.body}</p>
+            <div className="flex items-baseline gap-6">
+              <span className="font-mono text-base text-gold" data-numeric="">
+                {phase.step}
+              </span>
+              <h3 className="m-0 text-xl font-semibold tracking-tight">
+                {phase.title}
+              </h3>
             </div>
-          </div>
+            <span
+              className={`font-mono text-sm tracking-[0.12em] uppercase ${
+                TONES[phase.status] ?? "text-faint"
+              }`}
+            >
+              {phase.status}
+            </span>
+          </Reveal>
         ))}
-      </Reveal>
+      </ol>
     </section>
   );
 }

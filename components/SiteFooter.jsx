@@ -1,21 +1,42 @@
 import Image from "next/image";
 
+import { SocialLink } from "@/components/socialIcons";
+
 export default function SiteFooter() {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="mt-7 flex flex-col items-start justify-between gap-4 border-t border-line py-[22px] text-muted min-[980px]:flex-row min-[980px]:items-center">
-      <a href="#top" aria-label="Moonriver.fun home">
-        <Image
-          src="/assets/logo.svg"
-          alt="Moonriver.fun"
-          width={150}
-          height={30}
-          unoptimized
-          className="h-[30px] w-auto"
-        />
-      </a>
-      <p className="m-0">© {year} Moonriver.fun. All rights reserved.</p>
+    <footer className="border-t border-rule py-8">
+      <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+        <a href="#top" aria-label="Moonriver.fun home">
+          <Image
+            src="/assets/logo.svg"
+            alt="Moonriver.fun"
+            width={175}
+            height={35}
+            unoptimized
+            className="h-[35px] w-auto"
+          />
+        </a>
+
+        <div className="flex flex-wrap items-center gap-x-7 gap-y-3">
+          <a href="#mechanics" className="label no-underline hover:text-paper">
+            Docs
+          </a>
+          <a href="#roadmap" className="label no-underline hover:text-paper">
+            Roadmap
+          </a>
+
+          <span className="flex items-center gap-5">
+            <SocialLink name="X" href="https://x.com/moonriverfun" />
+            <SocialLink name="Instagram" href="https://instagram.com/moonriverfun" />
+          </span>
+
+          <span className="label" data-numeric="">
+            © {year} Moonriver.fun
+          </span>
+        </div>
+      </div>
     </footer>
   );
 }

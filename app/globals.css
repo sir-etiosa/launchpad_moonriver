@@ -1,35 +1,78 @@
 @import "tailwindcss";
 
+/*
+ * Moonriver.fun design system — violet and gold.
+ *
+ * A moon on a night sky: deep violet-black ground, violet carrying structure and links,
+ * bright gold carrying value, action and anything that reads as money. Coral is the only
+ * antagonist. Three accents, each with one job, so none of them dilute.
+ *
+ * Contrast is held in a comfortable band rather than pushed to maximum, and the type
+ * scale runs a step larger than a typical product UI because this page is read at a
+ * distance, as a shopfront.
+ */
 @theme {
-  --color-night: #06121d;
-  --color-night-soft: #0d1d2b;
-  --color-panel: rgba(17, 29, 41, 0.85);
-  --color-panel-strong: #111f2d;
-  --color-ink: #ecf5ff;
-  --color-muted: #9bb1c3;
-  --color-line: rgba(160, 198, 220, 0.18);
-  --color-cyan: #63e6ff;
-  --color-purple: #8a7dff;
-  --color-orange: #ffb067;
-  --color-green: #6af0b9;
+  --color-ink: #0b0818;
+  --color-panel: #150f26;
+  --color-raised: #1f1735;
+  --color-sunken: #060410;
 
-  --font-sans: "Segoe UI", Inter, Arial, sans-serif;
+  --color-rule: rgba(216, 206, 245, 0.14);
+  --color-rule-strong: rgba(216, 206, 245, 0.28);
+
+  --color-paper: #ece6fa;
+  --color-quiet: #a69cc4;
+  --color-faint: #7a6f9a;
+
+  --color-brand: #9d5cff;
+  --color-brand-dim: rgba(157, 92, 255, 0.15);
+
+  --color-gold: #ffd24a;
+  --color-gold-deep: #c9962c;
+  --color-gold-dim: rgba(255, 210, 74, 0.14);
+
+  /*
+   * "Live" — whose move it is. A separate job from gold, which means "act on this".
+   * Reintroduced deliberately rather than inherited, and only ever used for turn state.
+   */
+  --color-live: #4ed9a4;
+  --color-live-panel: #10241f;
+  --color-live-dim: rgba(78, 217, 164, 0.12);
+
+  --color-down: #f2705f;
+  --color-down-dim: rgba(242, 112, 95, 0.14);
+
+  --font-sans:
+    ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial,
+    sans-serif;
+  --font-mono:
+    ui-monospace, "SF Mono", SFMono-Regular, "JetBrains Mono", Menlo, Consolas,
+    "Liberation Mono", monospace;
+
+  --radius-sharp: 2px;
 }
 
 @layer base {
   html {
     scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
   }
 
   body {
     margin: 0;
     min-height: 100vh;
+    /* 18px root: everything measured in rem scales with it. */
+    font-size: 1.125rem;
     font-family: var(--font-sans);
-    color: var(--color-ink);
-    background:
-      radial-gradient(circle at top left, rgba(138, 125, 255, 0.28), transparent 30%),
-      radial-gradient(circle at top right, rgba(99, 230, 255, 0.24), transparent 38%),
-      linear-gradient(135deg, #050d16 0%, #081722 34%, #0a1d2d 100%);
+    background-color: var(--color-ink);
+    color: var(--color-paper);
+    font-synthesis-weight: none;
+  }
+
+  /* Numbers are data here. They line up or they lie. */
+  table,
+  [data-numeric] {
+    font-variant-numeric: tabular-nums;
   }
 
   img {
@@ -38,26 +81,45 @@
   }
 
   button,
-  a {
+  input,
+  select,
+  textarea {
     font: inherit;
+    color: inherit;
+  }
+
+  /* Focus is the most important state on the page, so it gets the loudest colour. */
+  :focus-visible {
+    outline: 2px solid var(--color-gold);
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background: var(--color-gold);
+    color: var(--color-ink);
   }
 
   main [id] {
     scroll-margin-top: 96px;
   }
-}
 
-/* Animations that cannot be expressed as pure utilities. */
-@keyframes orbitSpin {
-  to {
-    transform: rotate(360deg);
+  /* iOS Safari zooms the viewport on any input under 16px. */
+  @media (max-width: 640px) {
+    input,
+    select,
+    textarea {
+      font-size: 1rem;
+    }
   }
 }
 
-@keyframes fadeUp {
+/*
+ * Entrance is a settle, not a bounce: a short rise with a sharp decelerate.
+ */
+@keyframes settle {
   from {
     opacity: 0;
-    transform: translateY(18px);
+    transform: translateY(8px);
   }
   to {
     opacity: 1;
@@ -65,25 +127,26 @@
   }
 }
 
-@utility orbit-spin {
-  transform-box: view-box;
-  transform-origin: 310px 310px;
-  animation: orbitSpin 32s linear infinite;
-}
-
-@utility orbit-spin-reverse {
-  transform-box: view-box;
-  transform-origin: 310px 310px;
-  animation: orbitSpin 24s linear infinite reverse;
+/* Small caps label used for column heads, eyebrows, and section markers. */
+@utility label {
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-quiet);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .orbit-spin,
-  .orbit-spin-reverse {
-    animation: none;
-  }
-
   html {
     scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }

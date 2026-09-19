@@ -1,27 +1,25 @@
 import CtaPanel from "@/components/CtaPanel";
-import Ecosystem from "@/components/Ecosystem";
 import Faq from "@/components/Faq";
-import Features from "@/components/Features";
+import Games from "@/components/Games";
 import Hero from "@/components/Hero";
-import Launches from "@/components/Launches";
+import Launchpad from "@/components/Launchpad";
+import Mechanics from "@/components/Mechanics";
 import Roadmap from "@/components/Roadmap";
 import SiteFooter from "@/components/SiteFooter";
-import Testimonials from "@/components/Testimonials";
 import Topbar from "@/components/Topbar";
-import Trusted from "@/components/Trusted";
+import Trading from "@/components/Trading";
 
 export default function Home() {
   return (
     <>
       <Topbar />
-      <main id="top">
+      <main>
         <Hero />
-        <Trusted />
-        <Features />
-        <Launches />
-        <Ecosystem />
+        <Launchpad />
+        <Mechanics />
+        <Games />
+        <Trading />
         <Roadmap />
-        <Testimonials />
         <Faq />
         <CtaPanel />
       </main>
