@@ -49,7 +49,7 @@
     ui-monospace, "SF Mono", SFMono-Regular, "JetBrains Mono", Menlo, Consolas,
     "Liberation Mono", monospace;
 
-  --radius-sharp: 2px;
+  --radius-sharp: 10px;
 }
 
 @layer base {

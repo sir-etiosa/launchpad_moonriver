@@ -8,6 +8,7 @@ import { useState } from "react";
 import { WagmiProvider } from "wagmi";
 
 import { wagmiConfig } from "@/lib/wagmi";
+import { ProfileProvider } from "@/components/dapp/ProfileProvider";
 
 const dappTheme = darkTheme({
   accentColor: "#9d5cff",
@@ -29,7 +30,7 @@ export default function Providers({ children }) {
     <WagmiProvider config={wagmiConfig}>
       <QueryClientProvider client={queryClient}>
         <RainbowKitProvider theme={dappTheme} modalSize="compact">
-          {children}
+          <ProfileProvider>{children}</ProfileProvider>
         </RainbowKitProvider>
       </QueryClientProvider>
     </WagmiProvider>

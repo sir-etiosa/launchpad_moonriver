@@ -1,11 +1,12 @@
 "use client";
 
 import { ConnectButton } from "@rainbow-me/rainbowkit";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAccount } from "wagmi";
 
 import WhotCard from "@/components/games/WhotCard";
 import { WhotCardStack } from "@/components/games/WhotCardBack";
+import { useProfile } from "@/components/dapp/ProfileProvider";
 import { SUIT_NAMES, WhotSuit } from "@/components/games/suits";
 import { SUITS } from "@/lib/whot/deck.mjs";
 import { scoreHand } from "@/lib/whot/rules.mjs";
@@ -31,6 +32,8 @@ const TABLE_SECONDS = 45;
  * now waits long enough for the board to be legible before it changes again.
  */
 const BOT_THINK_MS = 1500;
+const GAME_STORAGE_KEY = "moonriver:whot-game-id";
+const SNAPSHOT_STORAGE_KEY = "moonriver:whot-snapshot";
 
 function quietLimitFor(playerCount) {
   return playerCount === 2 ? HEAD_TO_HEAD_SECONDS : TABLE_SECONDS;
@@ -42,9 +45,26 @@ function formatClock(total) {
   return `${minutes}:${String(seconds).padStart(2, "0")}`;
 }
 
-function buildGame(playerCount, seed) {
-  const playerIds = ["You", ...BOT_NAMES.slice(0, playerCount - 1)];
+function buildGame(playerCount, seed, playerName = "You") {
+  const playerIds = [playerName, ...BOT_NAMES.slice(0, playerCount - 1)];
   return createGame({ seed, playerIds });
+}
+
+function playerNameFor(game, index, humanName) {
+  return index === HUMAN ? humanName : game.players[index].id;
+}
+
+function saveBrowserSnapshot(gameId, state, pendingWhot) {
+  window.localStorage.setItem(GAME_STORAGE_KEY, gameId);
+  window.localStorage.setItem(
+    SNAPSHOT_STORAGE_KEY,
+    JSON.stringify({ state, pendingWhot }),
+  );
+}
+
+function clearBrowserSession() {
+  window.localStorage.removeItem(GAME_STORAGE_KEY);
+  window.localStorage.removeItem(SNAPSHOT_STORAGE_KEY);
 }
 
 /** Bots play the first legal card they hold, and call their strongest suit on a whot. */
@@ -83,7 +103,7 @@ const ALERT_TONES = {
   gold: "border-gold/60 bg-gold-dim text-gold",
 };
 
-function alertFor(game, { isHumanTurn, suitPickerOpen, humanHandSize }) {
+function alertFor(game, { isHumanTurn, suitPickerOpen, humanHandSize, humanName }) {
   if (!game || game.finished) return null;
 
   if (suitPickerOpen) {
@@ -118,7 +138,7 @@ function alertFor(game, { isHumanTurn, suitPickerOpen, humanHandSize }) {
       : {
           tone: "down",
           title: `Pick ${count}`,
-          detail: `${game.players[game.turn].id} is sitting under it.`,
+          detail: `${playerNameFor(game, game.turn, humanName)} is sitting under it.`,
         };
   }
 
@@ -136,12 +156,12 @@ function alertFor(game, { isHumanTurn, suitPickerOpen, humanHandSize }) {
   return null;
 }
 
-function GameAlert({ tone, title, detail, suit }) {
+function GameAlert({ tone, title, detail, suit, className = "" }) {
   return (
     <div
       role="status"
       aria-live={tone === "down" ? "assertive" : "polite"}
-      className={`flex items-start gap-4 rounded-sharp border px-5 py-4 ${
+      className={`flex items-start gap-4 rounded-sharp border px-5 py-4 ${className} ${
         ALERT_TONES[tone] ?? ALERT_TONES.gold
       }`}
     >
@@ -222,30 +242,224 @@ function LastCardWarning({ count, className = "" }) {
   );
 }
 
+function WinnerBadge() {
+  return (
+    <div className="mb-6 flex items-center gap-4 rounded-sharp border border-gold/60 bg-gold-dim px-5 py-4">
+      <svg
+        aria-hidden="true"
+        viewBox="0 0 48 48"
+        fill="none"
+        className="h-14 w-14 shrink-0 text-gold"
+      >
+        <path
+          d="M16 8h16v11c0 6-3.2 10-8 10s-8-4-8-10V8Z"
+          fill="currentColor"
+          fillOpacity=".18"
+          stroke="currentColor"
+          strokeWidth="2.5"
+        />
+        <path
+          d="M16 12H9v4c0 5.2 3 8 8 8M32 12h7v4c0 5.2-3 8-8 8M24 29v6M17 40h14M19 35h10"
+          stroke="currentColor"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <path d="m24 12 1.5 3 3.3.5-2.4 2.3.6 3.2-3-1.5-3 1.5.6-3.2-2.4-2.3 3.3-.5L24 12Z" fill="currentColor" />
+      </svg>
+      <div>
+        <p className="label m-0 text-gold">Winner</p>
+        <p className="m-0 mt-1 text-2xl font-semibold tracking-tight text-paper">
+          You won the hand
+        </p>
+      </div>
+    </div>
+  );
+}
+
 export default function WhotTable() {
   const [phase, setPhase] = useState("lobby");
   const [playerCount, setPlayerCount] = useState(4);
   const [game, setGame] = useState(null);
+  const [gameId, setGameId] = useState(null);
+  const [resumeSession, setResumeSession] = useState(null);
+  const [persistenceVersion, setPersistenceVersion] = useState(0);
   const [pendingWhot, setPendingWhot] = useState(null);
   const [remaining, setRemaining] = useState(TABLE_SECONDS);
+  const [persistenceError, setPersistenceError] = useState("");
+  const [hydrated, setHydrated] = useState(false);
+  const ownerKeyRef = useRef("");
+  const persistenceVersionRef = useRef(0);
   // No wallet, no table: a hand you cannot be paid for is not worth dealing.
-  const { isConnected } = useAccount();
+  const { address, isConnected } = useAccount();
+  const { displayName } = useProfile();
 
   const finished = Boolean(game?.finished);
   const isHumanTurn = Boolean(game) && !finished && game.turn === HUMAN;
   const suitPickerOpen = pendingWhot !== null;
   const quietLimit = quietLimitFor(playerCount);
 
-  function startGame(count = playerCount) {
+  useEffect(() => {
+    let mounted = true;
+
+    async function restoreSession() {
+      if (!isConnected || !address) {
+        setResumeSession(null);
+        setGame(null);
+        setGameId(null);
+        setPhase("lobby");
+        if (mounted) setHydrated(true);
+        return;
+      }
+
+      const ownerKey = address.toLowerCase();
+      ownerKeyRef.current = ownerKey;
+      setResumeSession(null);
+      setGame(null);
+      setGameId(null);
+      setPhase("lobby");
+      const savedGameId = window.localStorage.getItem(GAME_STORAGE_KEY);
+
+      try {
+        const response = await fetch(
+          savedGameId
+            ? `/api/games/whot/${savedGameId}`
+            : `/api/games/whot?ownerKey=${encodeURIComponent(ownerKey)}`,
+          { headers: { "x-whot-owner": ownerKey } },
+        );
+
+        if (response.ok) {
+          const saved = await response.json();
+          if (!mounted) return;
+          const session = saved.active ?? saved.game ?? (saved.state ? saved : null);
+          if (!session?.state) {
+            setHydrated(true);
+            return;
+          }
+          setResumeSession(session);
+          setPlayerCount(session.state.players.length);
+          setPersistenceError("");
+        } else if (response.status === 404 && savedGameId) {
+          clearBrowserSession();
+        } else {
+          throw new Error("The game server could not be reached.");
+        }
+      } catch {
+        const snapshot = JSON.parse(
+          window.localStorage.getItem(SNAPSHOT_STORAGE_KEY) ?? "null",
+        );
+        if (mounted && snapshot?.state) {
+          setResumeSession({ gameId: savedGameId, state: snapshot.state, version: 0 });
+          setPlayerCount(snapshot.state.players.length);
+          setPersistenceError("Connection lost. Playing from the saved local snapshot.");
+        }
+      } finally {
+        if (mounted) setHydrated(true);
+      }
+    }
+
+    restoreSession();
+    return () => {
+      mounted = false;
+    };
+  }, [address, isConnected]);
+
+  useEffect(() => {
+    if (!hydrated || !game || !gameId) return;
+
+    saveBrowserSnapshot(gameId, game, pendingWhot);
+    if (!ownerKeyRef.current) return;
+
+    const version = persistenceVersionRef.current;
+    fetch(`/api/games/whot/${gameId}`, {
+      method: "PUT",
+      headers: {
+        "content-type": "application/json",
+        "x-whot-owner": ownerKeyRef.current,
+      },
+      body: JSON.stringify({ state: game, version }),
+    })
+      .then(async (response) => {
+        if (!response.ok) throw new Error("Game save failed.");
+        const saved = await response.json();
+        persistenceVersionRef.current = saved.version;
+        setPersistenceVersion(saved.version);
+        setPersistenceError("");
+      })
+      .catch(() => {
+        setPersistenceError("Connection lost. Your latest move is saved on this device.");
+      });
+  }, [game, gameId, hydrated, pendingWhot]);
+
+  function continueGame(session = resumeSession) {
+    if (!session?.state) return;
+
+    const snapshot = JSON.parse(
+      window.localStorage.getItem(SNAPSHOT_STORAGE_KEY) ?? "null",
+    );
+    setGame(session.state);
+    setGameId(session.gameId);
+    setPersistenceVersion(session.version);
+    persistenceVersionRef.current = session.version;
+    setPlayerCount(session.state.players.length);
+    setRemaining(quietLimitFor(session.state.players.length));
+    setPendingWhot(snapshot?.pendingWhot ?? null);
+    setResumeSession(null);
+    setPhase("playing");
+  }
+
+  async function startGame(count = playerCount) {
+    if (resumeSession?.gameId && ownerKeyRef.current) {
+      await fetch(`/api/games/whot/${resumeSession.gameId}`, {
+        method: "DELETE",
+        headers: { "x-whot-owner": ownerKeyRef.current },
+      }).catch(() => {});
+      clearBrowserSession();
+    }
+
     setPlayerCount(count);
-    setGame(buildGame(count, Math.floor(Math.random() * 2 ** 31)));
+    const nextGame = buildGame(count, Math.floor(Math.random() * 2 ** 31), displayName);
+    const ownerKey = ownerKeyRef.current || address?.toLowerCase();
+    if (!ownerKey) return;
+    ownerKeyRef.current = ownerKey;
+
+    try {
+      const response = await fetch("/api/games/whot", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ ownerKey, state: nextGame }),
+      });
+      if (!response.ok) throw new Error("Game persistence is unavailable.");
+      const saved = await response.json();
+      setGameId(saved.gameId);
+      setPersistenceVersion(saved.version);
+      persistenceVersionRef.current = saved.version;
+      setGame(nextGame);
+      setPersistenceError("");
+      saveBrowserSnapshot(saved.gameId, nextGame, null);
+    } catch {
+      const localGameId = window.crypto.randomUUID();
+      setGameId(localGameId);
+      setGame(nextGame);
+      setPersistenceError("Database unavailable. This game will resume only on this device.");
+      saveBrowserSnapshot(localGameId, nextGame, null);
+    }
     setPendingWhot(null);
     setRemaining(quietLimitFor(count));
     setPhase("playing");
   }
 
   function endGame() {
+    if (gameId && ownerKeyRef.current && !finished) {
+      fetch(`/api/games/whot/${gameId}`, {
+        method: "DELETE",
+        headers: { "x-whot-owner": ownerKeyRef.current },
+      }).catch(() => {});
+    }
+    clearBrowserSession();
     setGame(null);
+    setGameId(null);
+    setResumeSession(null);
     setPendingWhot(null);
     setPhase("lobby");
   }
@@ -356,18 +570,37 @@ export default function WhotTable() {
         </dl>
 
         <div className="mt-9 flex flex-wrap items-center gap-x-6 gap-y-4">
-          <button
-            type="button"
-            disabled={!isConnected}
-            onClick={() => startGame()}
-            className={`rounded-sharp border px-7 py-3 text-base font-semibold transition-colors duration-150 ${
-              isConnected
-                ? "cursor-pointer border-gold bg-gold text-ink hover:border-gold-deep hover:bg-gold-deep"
-                : "cursor-not-allowed border-rule text-faint"
-            }`}
-          >
-            Start game
-          </button>
+          {resumeSession ? (
+            <>
+              <button
+                type="button"
+                onClick={() => continueGame()}
+                className="cursor-pointer rounded-sharp border border-live bg-live px-7 py-3 text-base font-semibold text-ink transition-colors hover:bg-[#65e5b0]"
+              >
+                Continue game
+              </button>
+              <button
+                type="button"
+                onClick={() => startGame()}
+                className="cursor-pointer rounded-sharp border border-gold bg-gold px-7 py-3 text-base font-semibold text-ink transition-colors hover:bg-gold-deep"
+              >
+                New game
+              </button>
+            </>
+          ) : (
+            <button
+              type="button"
+              disabled={!isConnected}
+              onClick={() => startGame()}
+              className={`rounded-sharp border px-7 py-3 text-base font-semibold transition-colors duration-150 ${
+                isConnected
+                  ? "cursor-pointer border-gold bg-gold text-ink hover:border-gold-deep hover:bg-gold-deep"
+                  : "cursor-not-allowed border-rule text-faint"
+              }`}
+            >
+              New game
+            </button>
+          )}
 
           {!isConnected ? (
             <>
@@ -486,6 +719,7 @@ export default function WhotTable() {
     isHumanTurn,
     suitPickerOpen,
     humanHandSize: pool.length,
+    humanName: displayName,
   });
 
   function playCard(card) {
@@ -513,10 +747,10 @@ export default function WhotTable() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 rounded-sharp">
       <h1 className="sr-only">Whot</h1>
 
-      <div className="flex flex-wrap items-center justify-between gap-4">
+      <div className="flex flex-wrap items-center justify-between gap-4 rounded-sharp border border-rule bg-panel px-4 py-3">
         <div className="flex flex-wrap items-center gap-5">
           <span className="label m-0">
             {playerCount === 2 ? "1:1" : `${playerCount} players`} · locked
@@ -536,13 +770,17 @@ export default function WhotTable() {
         <button
           type="button"
           onClick={endGame}
-          className="cursor-pointer rounded-sharp border border-down/50 bg-down-dim px-5 py-2 text-base font-semibold text-down transition-colors duration-150 hover:border-down hover:bg-down hover:text-ink"
+          className={`cursor-pointer rounded-sharp border px-5 py-2 text-base font-semibold transition-colors duration-150 ${
+            finished
+              ? "border-rule-strong text-paper hover:border-gold hover:bg-gold-dim hover:text-gold"
+              : "border-down/50 bg-down-dim text-down hover:border-down hover:bg-down hover:text-ink"
+          }`}
         >
-          Forfeit game
+          {finished ? "Close game" : "Forfeit game"}
         </button>
       </div>
 
-      <div className="flex flex-wrap items-start justify-center gap-x-14 gap-y-6 lg:justify-between">
+      <div className="flex flex-wrap items-start justify-center gap-x-6 gap-y-3 lg:justify-between">
         {game.players.slice(1).map((player, index) => {
           const seat = index + 1;
           const active = !finished && game.turn === seat;
@@ -550,19 +788,19 @@ export default function WhotTable() {
           return (
             <div
               key={player.id}
-              className={`min-w-[11rem] flex-1 rounded-sharp border px-5 py-4 text-center transition-colors duration-300 lg:flex-none ${
+              className={`min-w-[9rem] flex-1 rounded-sharp border px-3 py-3 text-center transition-colors duration-300 lg:flex-none ${
                 active
                   ? "border-live/60 bg-live-panel"
                   : "border-rule bg-panel"
               }`}
             >
-              <div className="flex items-baseline justify-center gap-3">
+              <div className="flex items-baseline justify-center gap-3 rounded-sharp">
                 <p
                   className={`m-0 text-base font-semibold tracking-tight ${
                     active ? "text-live" : "text-paper"
                   }`}
                 >
-                  {player.id}
+                  {playerNameFor(game, seat, displayName)}
                 </p>
                 {active ? (
                   <span className="m-0 font-mono text-sm tracking-[0.12em] text-live uppercase">
@@ -589,7 +827,7 @@ export default function WhotTable() {
                 </div>
               ) : (
                 <div className="mt-2 flex justify-center">
-                  <WhotCardStack count={player.hand.length} size="md" />
+                  <WhotCardStack count={player.hand.length} size="sm" />
                 </div>
               )}
             </div>
@@ -597,15 +835,13 @@ export default function WhotTable() {
         })}
       </div>
 
-      <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_10rem]">
-        <div className="space-y-6">
+      <div className="grid gap-8 rounded-sharp lg:grid-cols-[minmax(0,1fr)_10rem]">
+        <div className="flex flex-col gap-6">
           {isHumanTurn && remaining <= 15 ? (
             <CountdownAlert seconds={remaining} headToHead={playerCount === 2} />
           ) : null}
 
-          {alert ? <GameAlert {...alert} /> : null}
-
-      <div className="rounded-sharp border border-rule bg-panel shadow-[0_18px_40px_rgba(0,0,0,0.35)]">
+      <div className="order-2 rounded-sharp border border-rule bg-panel shadow-[0_18px_40px_rgba(0,0,0,0.35)]">
         <div className="grid items-center gap-x-8 gap-y-6 px-6 py-6 lg:grid-cols-[1fr_auto_1fr]">
           <div className="flex flex-col items-start gap-2.5">
             <span
@@ -617,8 +853,14 @@ export default function WhotTable() {
                 ? "Hand over"
                 : isHumanTurn
                   ? "Your turn"
-                  : `${game.players[game.turn].id} thinking`}
+                  : `${playerNameFor(game, game.turn, displayName)} thinking`}
             </span>
+            {!finished && isHumanTurn ? (
+              <p className="m-0 max-w-[18ch] text-base font-semibold leading-snug text-paper">
+                Choose a highlighted card.
+              </p>
+            ) : null}
+            {alert ? <GameAlert {...alert} className="mt-2 max-w-[20rem]" /> : null}
           </div>
 
           <div className="flex flex-wrap items-center justify-center gap-10">
@@ -710,6 +952,7 @@ export default function WhotTable() {
         </div>
       </div>
 
+      <div className="order-1">
       {finished ? (
         <div className="rounded-sharp border border-gold/40 bg-gold-dim px-6 py-6">
           {game.abandoned ? (
@@ -724,9 +967,10 @@ export default function WhotTable() {
             </>
           ) : (
             <>
+              {game.winner === HUMAN ? <WinnerBadge /> : null}
               <p className="label m-0">Result</p>
               <h2 className="mt-3 mb-0 text-2xl font-semibold tracking-tight">
-                {game.players[game.winner].id} wins the hand
+                {playerNameFor(game, game.winner, displayName)} wins the hand
               </h2>
               <table className="mt-5 w-full border-collapse">
                 <caption className="sr-only">
@@ -755,7 +999,7 @@ export default function WhotTable() {
 
                     return (
                       <tr
-                        key={game.players[playerIndex].id}
+                        key={playerNameFor(game, playerIndex, displayName)}
                         className="border-b border-rule"
                       >
                         <td
@@ -765,7 +1009,7 @@ export default function WhotTable() {
                           {place + 1}
                         </td>
                         <td className="py-3 align-top text-base whitespace-nowrap">
-                          {game.players[playerIndex].id}
+                          {playerNameFor(game, playerIndex, displayName)}
                         </td>
                         <td className="py-3">
                           {held.length === 0 ? (
@@ -806,10 +1050,22 @@ export default function WhotTable() {
         >
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
-              <p className="label m-0">Your hand</p>
+              <div className="flex flex-wrap items-center gap-3">
+                <p className="label m-0">Your hand</p>
+                {isHumanTurn ? (
+                  <span className="rounded-full bg-live px-2.5 py-1 font-mono text-xs font-bold tracking-widest text-ink uppercase">
+                    Play now
+                  </span>
+                ) : null}
+              </div>
               <div className="mt-2 flex items-baseline gap-4">
                 <CardCount count={pool.length} />
                 <LastCardWarning count={pool.length} />
+                {isHumanTurn ? (
+                  <span className="font-mono text-sm text-live" data-numeric="">
+                    {legalIds.size} playable
+                  </span>
+                ) : null}
               </div>
             </div>
           </div>
@@ -824,23 +1080,24 @@ export default function WhotTable() {
                   disabled={!playable}
                   onClick={() => playCard(card)}
                   aria-label={`Play ${card.number} of ${card.suit ?? "whot"}`}
-                  className={`rounded-lg transition-transform duration-150 ${
+                  className={`rounded-lg transition-transform duration-150 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-gold ${
                     playable
-                      ? "cursor-pointer hover:-translate-y-1.5"
+                      ? "cursor-pointer shadow-[0_0_0_3px_rgba(78,217,164,0.45)] hover:-translate-y-1.5 hover:shadow-[0_0_0_5px_rgba(78,217,164,0.7)]"
                       : "cursor-not-allowed"
                   }`}
                 >
-                  <WhotCard card={card} muted={isHumanTurn && !playable} />
+                  <WhotCard card={card} size="sm" muted={isHumanTurn && !playable} />
                 </button>
               );
             })}
           </div>
         </div>
       )}
+      </div>
 
         </div>
 
-        <aside className="border-t border-rule pt-6 lg:border-t-0 lg:border-l lg:pt-1 lg:pl-7">
+        <aside className="pt-6 lg:border-t-0 lg:border-l lg:pt-1 lg:pl-7">
           <p className="label m-0">Last moves</p>
         {recent.length === 0 ? (
           <p className="mt-3 mb-0 text-base text-quiet">
@@ -849,8 +1106,14 @@ export default function WhotTable() {
         ) : (
           <ol className="mt-3 mb-0 list-none space-y-1.5 p-0 font-mono text-[0.8125rem] leading-snug text-quiet">
             {recent.map((entry, index) => (
-              <li key={`${entry.type}-${game.log.length - index}`} data-numeric="">
-                <span className="text-paper">{game.players[entry.playerIndex].id}</span>{" "}
+              <li
+                key={`${entry.type}-${game.log.length - index}`}
+                data-numeric=""
+                className={index === 0 ? "font-semibold text-gold" : ""}
+              >
+                <span className="text-paper">
+                  {playerNameFor(game, entry.playerIndex, displayName)}
+                </span>{" "}
                 {entry.type === "play"
                   ? `played ${entry.cardId}`
                   : entry.type === "draw"

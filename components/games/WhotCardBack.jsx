@@ -18,7 +18,10 @@ export function WhotCardBack({ size = "md", className = "" }) {
       className={`relative rounded-lg border border-[#2a1f12] bg-[#4a3823] p-[3px] ${scale.box} ${className}`}
     >
       <span className="relative block h-full w-full rounded-md border border-[#e6d9c0]/30">
-        <span className="absolute inset-0 m-auto h-2.5 w-2.5 rotate-45 border border-[#e6d9c0]/45" />
+        <span className="absolute inset-0 flex flex-col items-center justify-center gap-2 font-mono text-xl font-bold tracking-[0.16em] text-[#e6d9c0]/80">
+          <span>WHOT</span>
+          <span>WHOT</span>
+        </span>
       </span>
     </div>
   );

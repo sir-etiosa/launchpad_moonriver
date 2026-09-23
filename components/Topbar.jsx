@@ -18,11 +18,11 @@ export default function Topbar() {
           <Image
             src="/assets/logo.svg"
             alt="Moonriver.fun"
-            width={175}
-            height={35}
+            width={280}
+            height={56}
             priority
             unoptimized
-            className="h-[35px] w-auto"
+            className="h-14 w-auto"
           />
         </a>
 

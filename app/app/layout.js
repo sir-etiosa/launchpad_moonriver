@@ -36,11 +36,11 @@ export default function DappLayout({ children }) {
                 <Image
                   src="/assets/logo.svg"
                   alt="Moonriver.fun"
-                  width={200}
-                  height={40}
+                  width={280}
+                  height={56}
                   unoptimized
                   priority
-                  className="h-10 w-auto"
+                  className="h-14 w-auto"
                 />
               </Link>
 

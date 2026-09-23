@@ -12,10 +12,10 @@ export default function SiteFooter() {
           <Image
             src="/assets/logo.svg"
             alt="Moonriver.fun"
-            width={175}
-            height={35}
+            width={280}
+            height={56}
             unoptimized
-            className="h-[35px] w-auto"
+            className="h-14 w-auto"
           />
         </a>
 
